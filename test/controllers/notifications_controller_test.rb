@@ -171,7 +171,7 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
     notification2 = create(:notification, user: @user, archived: false)
     notification3 = create(:notification, user: @user, archived: false)
 
-    stub_request(:patch, /https:\/\/api.github.com\/notifications\/threads/)
+    stub_request(:delete, /https:\/\/api\.github\.com\/notifications\/threads/)
 
     post '/notifications/archive_selected', params: { id: [notification1.id, notification2.id], value: true }, xhr: true
 
@@ -188,7 +188,7 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
     notification2 = create(:notification, user: @user, archived: false)
     notification3 = create(:notification, user: @user, archived: false)
 
-    stub_request(:patch, /https:\/\/api.github.com\/notifications\/threads/)
+    stub_request(:delete, /https:\/\/api\.github\.com\/notifications\/threads/)
 
     post '/notifications/archive_selected', params: { id: ['all'], value: true }, xhr: true
 
@@ -432,7 +432,7 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
     json = Oj.load(response.body)
     notification_count = Notification.inbox.where(user: @user).count
     assert_equal notification_count, json["pagination"]["total_notifications"]
-    assert_equal 0, json["pagination"]["page"]
+    assert_equal 1, json["pagination"]["page"]
     assert_equal (notification_count.to_f / 20).ceil, json["pagination"]["total_pages"]
     assert_equal [notification_count, 20].min, json["pagination"]["per_page"]
   end
@@ -460,7 +460,7 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     json = Oj.load(response.body)
     assert_equal 0, json["pagination"]["total_notifications"]
-    assert_equal 0, json["pagination"]["page"]
+    assert_equal 1, json["pagination"]["page"]
     assert_equal 0, json["pagination"]["total_pages"]
     assert_equal 0, json["pagination"]["per_page"]
   end
@@ -734,6 +734,16 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal assigns(:notifications).length, 2
   end
 
+  test 'search results can filter by multiple labels with distinct items' do
+    sign_in_as(@user)
+    notification1 = create(:notification, user: @user)
+    subject1 = create(:subject, notifications: [notification1])
+    create(:label, subject: subject1, name: 'bug')
+    create(:label, subject: subject1, name: 'feature')
+    get '/?q=label%3Abug%2Cfeature'
+    assert_equal assigns(:notifications).length, 1
+  end
+
   test 'search results can filter to exclude label' do
     sign_in_as(@user)
     notification1 = create(:notification, user: @user)
@@ -896,7 +906,7 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
 
     notification1 = create(:notification, user: @user, archived: true)
     create(:notification, user: @user, archived: true)
-    stub_request(:patch, /https:\/\/api.github.com\/notifications\/threads/)
+    
 
     post '/notifications/archive_selected', params: { id: [notification1.id], value: false }, xhr: true
 
@@ -1107,5 +1117,13 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
     get lookup_notifications_path(format: :json)
     assert_response :success
     assert_equal '{}', response.body
+  end
+
+  test 'gracefully handles page number 0' do
+    sign_in_as(@user)
+    notification = create(:notification, user: @user)
+
+    get '/?page=0'
+    assert_response :success
   end
 end

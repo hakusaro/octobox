@@ -1,20 +1,22 @@
 source 'https://rubygems.org'
-ruby '3.0.2'
+ruby '4.0.1'
 
-gem 'rails', '6.1.4.1'
-gem 'bootstrap', '4.6.0'
-gem 'attr_encrypted'
+gem 'rails', '8.1.2'
+gem 'bootstrap', '4.6.2'
+gem 'attr_encrypted', git: 'https://github.com/octobox/attr_encrypted.git', branch: 'rails-7'
 gem 'jquery-rails'
-gem 'pagy'
-gem 'local_time'
+gem 'pagy', '~> 9.4.0'
+gem 'local_time', '2.1.0'
 gem 'octicons_helper'
 gem 'octokit'
-gem 'omniauth-github', '2.0.0'
+gem 'omniauth-github', '2.0.1'
 gem 'puma'
 gem 'sassc-rails'
 gem 'turbolinks'
 gem 'typhoeus'
-gem 'faraday_middleware'
+gem 'faraday', '>= 2'
+gem 'faraday-retry'
+gem 'faraday-typhoeus'
 gem 'uglifier'
 gem 'pg_search'
 gem 'jbuilder'
@@ -25,16 +27,22 @@ gem 'sidekiq-unique-jobs'
 gem 'sidekiq-scheduler', require: false
 gem 'rack-canonical-host'
 gem 'sidekiq-status'
-gem 'gemoji', require: false
+gem 'gemoji', '<4', require: false
 gem 'bootsnap', require: false
 gem 'bugsnag'
 gem 'jwt'
 gem 'oj'
+gem 'ostruct'
 gem 'yard', require: false
-gem 'commonmarker'
-gem 'pg', '1.2.3'
+gem 'commonmarker', '2.6.3'
+gem 'pg'
 gem 'rexml'
 gem 'omniauth-rails_csrf_protection'
+gem 'psych'
+gem 'nokogiri'
+gem 'redis'
+gem 'rack-cors'
+gem 'benchmark'
 
 group :development, :test do
   gem 'dotenv-rails'
@@ -47,8 +55,9 @@ group :test do
   gem 'factory_bot'
   gem 'webmock'
   gem 'mocha'
-  gem 'minitest'
   gem 'timecop'
+  gem 'capybara'
+  gem 'capybara-playwright-driver'
 end
 
 group :development do
@@ -56,13 +65,11 @@ group :development do
   gem 'listen'
   gem 'spring'
   gem 'brakeman'
-  gem 'bullet'
-  gem 'binding_of_caller'
   gem 'better_errors'
 end
 
 group :production do
-  gem 'skylight', '~> 5.2.0.beta2'
+  gem 'skylight', '~> 7.0.0'
   gem 'lograge'
   gem 'puma_worker_killer'
 end

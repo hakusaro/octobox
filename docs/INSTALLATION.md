@@ -68,13 +68,13 @@ Protip: To generate a key, you can use `bin/rails secret | cut -c1-32`
 First things first, you'll need to fork and clone Octobox repository to
 your local machine.
 
-Secondly, you'll need to install Ruby 3.0.2. I recommend using the excellent [rbenv](https://github.com/rbenv/rbenv),
+Secondly, you'll need to install Ruby 3.4.7. I recommend using the excellent [rbenv](https://github.com/rbenv/rbenv),
 and [ruby-build](https://github.com/rbenv/ruby-build):
 
 ```bash
 brew install rbenv ruby-build
-rbenv install 3.0.2
-rbenv global 3.0.2
+rbenv install 3.4.7
+rbenv global 3.4.7
 ```
 
 Next, you'll need to make sure that you have PostgreSQL installed. This can be
@@ -167,7 +167,7 @@ Using `docker-compose up` automatically merges the override file in to the base 
 ### Configuring a production environment
 
 The `docker-compose.yml` file provided is for a _development_ configuration;
-there are are a number of things you'll want to configure differently for
+there are a number of things you'll want to configure differently for
 production use, like setting the Rails application for production and setting
 up a reverse proxy such as Apache or Nginx to serve static assets. You can use the
 `docker-compose.yml` file as an example to write your own or simply override
@@ -422,7 +422,7 @@ n.b. you will be required to log into the oauth app (to allow access to the noti
 
 To process events received from the webhook, ensure you have a sidekiq worker running as well as the rails server: `$ bundle exec sidekiq -C config/sidekiq.yml`
 
-If you wish to run the GitHub app locally and still receive webhook events, use a service like <https://ngrok.com> to create a public url (`https://my-octobx.ngrok.com`) and use instead of http://localhost:3000 for all oauth and GitHub app config urls.
+If you wish to run the GitHub app locally and still receive webhook events, use a service like [tunnelmole](https://tunnelmole.com/docs) or [ngrok](https://ngrok.com) to create a public url (e.g. `https://my-octobx.tunnelmole.net` / `https://my-octobx.ngrok.com`) and use instead of http://localhost:3000 for all oauth and GitHub app config urls. Tunnelmole is the open source option, ngrok is a popular closed source tool.
 
 ## Open links in the same tab
 

@@ -1,11 +1,10 @@
-FROM ruby:3.0.2-alpine
+FROM ruby:4.0.1-alpine AS builder
 
-ENV APP_ROOT /usr/src/app
-ENV OCTOBOX_DATABASE_PORT 5432
+ENV APP_ROOT=/usr/src/app
 WORKDIR $APP_ROOT
 
 # =============================================
-# System layer
+# Build layer
 
 # Will invalidate cache as soon as the Gemfile changes
 COPY Gemfile Gemfile.lock $APP_ROOT/
@@ -14,18 +13,53 @@ COPY Gemfile Gemfile.lock $APP_ROOT/
 # * Install Ruby dependencies
 RUN apk add --update \
     build-base \
+    git \
+    postgresql-dev \
+    curl-dev \
+    yaml-dev \
+    libffi-dev \
+    gcompat \
+    rust \
+    cargo \
+    clang-dev \
+ && rm -rf /var/cache/apk/* \
+ && gem update --system \
+ && gem install bundler \
+ && bundle config --global frozen 1 \
+ && bundle config set without 'test development' \
+ && bundle config set force_ruby_platform true \
+ && bundle install --jobs 2
+
+FROM ruby:4.0.1-alpine
+
+ENV APP_ROOT=/usr/src/app
+ENV OCTOBOX_DATABASE_PORT=5432
+ENV RUBY_YJIT_ENABLE=1
+ENV LD_PRELOAD=/usr/lib/libjemalloc.so.2
+WORKDIR $APP_ROOT
+
+# =============================================
+# System layer
+
+# Will invalidate cache as soon as the Gemfile changes
+COPY Gemfile Gemfile.lock $APP_ROOT/
+COPY --from=builder /usr/local/bundle /usr/local/bundle
+
+# * Setup system
+# * Install Ruby dependencies
+RUN apk add --update \
     netcat-openbsd \
     git \
     nodejs \
     postgresql-dev \
     tzdata \
-    curl-dev \
+    gcompat \
+    jemalloc \
  && rm -rf /var/cache/apk/* \
  && gem update --system \
  && gem install bundler foreman \
  && bundle config --global frozen 1 \
- && bundle config set without 'test' \
- && bundle install --jobs 2
+ && bundle config set without 'test development'
 
 # ========================================================
 # Application layer

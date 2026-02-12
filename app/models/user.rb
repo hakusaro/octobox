@@ -100,11 +100,11 @@ class User < ApplicationRecord
   end
 
   def personal_access_token_client
-    @personal_access_token_client ||= Octokit::Client.new(access_token: personal_access_token, auto_paginate: true) if personal_access_token_enabled?
+    Octokit::Client.new(access_token: personal_access_token, auto_paginate: true) if personal_access_token_enabled?
   end
 
   def access_token_client
-    @access_token_client ||= Octokit::Client.new(access_token: access_token, auto_paginate: true) if access_token.present?
+    Octokit::Client.new(access_token: access_token, auto_paginate: true) if access_token.present?
   end
 
   def comment_client(comment)
@@ -142,7 +142,7 @@ class User < ApplicationRecord
 
   def sync_app_installation_access
     return unless github_app_authorized?
-    remote_installs = app_installation_client.find_user_installations(accept: 'application/vnd.github.machine-man-preview+json')
+    remote_installs = app_installation_client.find_user_installations
     app_installations = AppInstallation.where(github_id: remote_installs[:installations].map(&:id))
     app_installations.each do |app_installation|
       app_installation_permissions.find_or_create_by(app_installation_id: app_installation.id)

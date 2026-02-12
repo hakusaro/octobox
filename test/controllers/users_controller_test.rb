@@ -48,6 +48,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   test 'assigns latest git sha on settings page' do
     sign_in_as(@user)
     get settings_path
+    assert_response :success
   end
 
   test 'updates api_token' do
@@ -194,6 +195,6 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     patch user_url(@user, format: :json), params: {user: {refresh_interval: -60_000}}
     @user.reload
     assert_nil @user.refresh_interval
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 end

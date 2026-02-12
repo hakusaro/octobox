@@ -43,9 +43,7 @@ module Octobox
     end
 
     def github_app_client
-      Octokit::Client.new(bearer_token: generate_jwt,
-                          auto_paginate: true,
-                          default_media_type: 'application/vnd.github.machine-man-preview+json')
+      Octokit::Client.new(bearer_token: generate_jwt, auto_paginate: true)
     end
 
     def installation_client(app_installation_id)
@@ -53,7 +51,7 @@ module Octobox
     end
 
     def installation_access_token(app_installation_id)
-      Octobox.github_app_client.create_installation_access_token(app_installation_id, accept: 'application/vnd.github.machine-man-preview+json').token
+      Octobox.github_app_client.create_installation_access_token(app_installation_id).token
     end
 
     private
@@ -64,7 +62,7 @@ module Octobox
       payload = {
         iat: Time.now.to_i,
         exp: Time.now.to_i + (10 * 60),
-        iss: Rails.application.secrets.github_app_id
+        iss: Octobox.config.github_app_id
       }
 
       JWT.encode(payload, private_key, "RS256")

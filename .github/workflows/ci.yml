@@ -2,14 +2,22 @@ name: CI
 
 on: [push]
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     name: Build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # Required to checkout the repository
 
     services:
       postgres:
-        image: postgres:11
+        image: postgres:11@sha256:5d2aa4a7b5f9bdadeddcf87cf7f90a176737a02a30d917de4ab2e6a329bd2d45
         env:
           POSTGRES_USER: octobox
           POSTGRES_DB: octobox_test
@@ -22,24 +30,28 @@ jobs:
           --health-retries 5
 
       redis:
-        image: redis
+        image: redis@sha256:73dad4271642c5966db88db7a7585fae7cf10b685d1e48006f31e0294c29fdd7
         ports:
         - 6379:6379
         options: --entrypoint redis-server
 
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
       - name: Install dependent libraries
         run: sudo apt-get install libpq-dev
       - name: Set up Node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
         with:
-          node-version: 15
+          node-version: 20
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd
         with:
-          ruby-version: 3.0.2
           bundler-cache: true
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
       - name: Run tests
         env:
@@ -50,4 +62,4 @@ jobs:
           OCTOBOX_DATABASE_PASSWORD: postgres
           OCTOBOX_DATABASE_USERNAME: octobox
           POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
-        run: bundle exec rake db:create db:migrate test
+        run: bundle exec rails db:test:prepare test
